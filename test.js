@@ -266,6 +266,73 @@ describe('unhandledRejection/rejectionHandled events', function () {
 	}
 });
 
+describe('Promise.prototype.finally', function () {
+	it('should call onFinally callback for resolved promise', function (done) {
+		Promise.resolve(42)
+			.finally(function () {
+				done();
+			});
+	});
+
+	it('should call onFinally callback for rejected promise', function (done) {
+		Promise.reject(new Error('boom'))
+			.finally(function () {
+				done();
+			});
+	});
+
+	it('should return value of resolved promise after finally', function (done) {
+		Promise.resolve(42)
+			.finally(function () {})
+			.then(function (value) {
+				assert.equal(value, 42);
+				done();
+			});
+	});
+
+	it('should return reason of rejected promise after finally', function (done) {
+		Promise.reject(new Error('boom'))
+			.finally(function () {})
+			.catch(function (reason) {
+				assert.equal(reason.message, 'boom');
+				done();
+			});
+	});
+
+	it('should reject promise if onFinally throws error', function (done) {
+		Promise.resolve(42)
+			.finally(function () {
+				throw new Error('boom');
+			})
+			.catch(function (reason) {
+				assert.equal(reason.message, 'boom');
+				done();
+			});
+	});
+
+	it('should reject promise if onFinally return rejected promise', function (done) {
+		Promise.resolve(42)
+			.finally(function () {
+				return Promise.reject(new Error('boom'));
+			})
+			.catch(function (reason) {
+				assert.equal(reason.message, 'boom');
+				done();
+			});
+	});
+
+	it('should return reason of rejection in finally if promise already rejected', function (done) {
+		Promise.reject(new Error('some error'))
+			.finally(function () {
+				return Promise.reject(new Error('boom'));
+			})
+			.catch(function (reason) {
+				assert.equal(reason.message, 'boom');
+				done();
+			});
+	});
+});
+
 function deferred() {
 	var resolve;
 	var reject;

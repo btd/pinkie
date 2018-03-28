@@ -217,6 +217,21 @@ Promise.prototype = {
 
 	catch: function (onRejection) {
 		return this.then(null, onRejection);
+	},
+
+	finally: function (onFinally) {
+		return this.then(
+			function (value) {
+				return Promise.resolve(onFinally()).then(function () {
+					return value;
+				});
+			},
+			function (reason) {
+				return Promise.resolve(onFinally()).then(function () {
+					throw reason;
+				});
+			}
+		);
 	}
 };
 
